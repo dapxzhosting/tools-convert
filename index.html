@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Tools</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f5f6f8;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #e2e4e9;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        header .logo-icon {
+            width: 32px; height: 32px;
+            background: #4f6ef7;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 16px;
+        }
+        header h1 { font-size: 18px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.3px; }
+        header span { color: #4f6ef7; }
+
+        .tab-nav {
+            background: #fff;
+            border-bottom: 1px solid #e2e4e9;
+            padding: 0 32px;
+            display: flex;
+            gap: 4px;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #7a7f8e;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.15s, border-color 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .tab-btn:hover { color: #1a1a2e; }
+        .tab-btn.active { color: #4f6ef7; border-bottom-color: #4f6ef7; font-weight: 600; }
+
+        .container { max-width: 860px; margin: 40px auto; padding: 0 24px; }
+
+        .tool-section { display: none; }
+        .tool-section.active { display: block; }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .section-desc {
+            font-size: 14px;
+            color: #7a7f8e;
+            margin-bottom: 24px;
+        }
+
+        .upload-area {
+            background: #fff;
+            border: 2px dashed #c8cdd8;
+            border-radius: 14px;
+            padding: 48px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: #4f6ef7;
+            background: #f0f3ff;
+        }
+        .upload-area input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 40px; margin-bottom: 12px; }
+        .upload-area h2 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+        .upload-area p { font-size: 14px; color: #7a7f8e; }
+        .upload-area .browse-btn {
+            display: inline-block; margin-top: 16px; padding: 9px 20px;
+            background: #4f6ef7; color: white; border-radius: 8px;
+            font-size: 14px; font-weight: 600; pointer-events: none;
+        }
+
+        .preview-section { display: none; margin-top: 28px; }
+        .preview-header {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+        }
+        .preview-header h3 { font-size: 15px; font-weight: 600; }
+        .preview-header span { font-size: 13px; color: #7a7f8e; }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 14px;
+        }
+        .preview-card {
+            background: #fff; border: 1px solid #e2e4e9; border-radius: 10px;
+            overflow: hidden; position: relative; transition: box-shadow 0.2s;
+        }
+        .preview-card:hover { box-shadow: 0 4px 16px rgba(79,110,247,0.12); }
+        .preview-card img {
+            width: 100%; height: 130px; object-fit: cover; display: block; background: #f5f6f8;
+        }
+        .preview-card .card-info { padding: 8px 10px; border-top: 1px solid #f0f0f0; }
+        .preview-card .card-name {
+            font-size: 12px; color: #3a3f4e; font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .preview-card .card-size { font-size: 11px; color: #a0a4b0; margin-top: 2px; }
+        .preview-card .remove-btn {
+            position: absolute; top: 6px; right: 6px;
+            width: 22px; height: 22px;
+            background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
+            color: white; font-size: 13px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.15s;
+        }
+        .preview-card:hover .remove-btn { opacity: 1; }
+        .page-badge {
+            position: absolute; top: 6px; left: 6px;
+            background: #4f6ef7; color: #fff;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 20px;
+        }
+
+        .video-preview-box {
+            display: none;
+            margin-top: 20px;
+            background: #fff;
+            border: 1px solid #e2e4e9;
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+        .video-info {
+            display: flex; align-items: center; gap: 14px;
+        }
+        .video-thumb {
+            width: 56px; height: 56px;
+            background: #f0f3ff;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; flex-shrink: 0;
+        }
+        .video-meta { flex: 1; }
+        .video-name { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 3px; word-break: break-all; }
+        .video-size { font-size: 12px; color: #7a7f8e; }
+        .video-remove {
+            background: none; border: 1px solid #e2e4e9; border-radius: 8px;
+            padding: 6px 12px; font-size: 13px; color: #7a7f8e;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .video-remove:hover { background: #f5f6f8; color: #e53e3e; border-color: #e53e3e; }
+
+        .format-options {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .format-options label { font-size: 13px; color: #555; font-weight: 500; margin-bottom: 8px; display: block; }
+        .format-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .format-btn {
+            padding: 7px 16px; border: 1px solid #d0d3dc; background: #fff;
+            border-radius: 8px; font-size: 13px; font-weight: 500; color: #555;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .format-btn.selected {
+            background: #4f6ef7; color: #fff; border-color: #4f6ef7;
+        }
+
+        .action-bar {
+            display: none; margin-top: 24px; background: #fff;
+            border: 1px solid #e2e4e9; border-radius: 12px;
+            padding: 18px 24px; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .action-bar.visible { display: flex; }
+        .action-info { font-size: 14px; color: #555; }
+        .action-info strong { color: #1a1a2e; }
+        .action-buttons { display: flex; gap: 10px; }
+        .btn-secondary {
+            padding: 9px 18px; border: 1px solid #d0d3dc; background: #fff;
+            border-radius: 8px; font-size: 14px; font-weight: 500; color: #555;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: #f5f6f8; }
+        .btn-convert {
+            padding: 9px 22px; background: #4f6ef7; color: #fff; border: none;
+            border-radius: 8px; font-size: 14px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 7px;
+            transition: background 0.15s;
+        }
+        .btn-convert:hover { background: #3a58e0; }
+        .btn-convert:disabled { background: #a0aee8; cursor: not-allowed; }
+
+        .progress-wrap { display: none; margin-top: 20px; }
+        .progress-label { font-size: 13px; color: #555; margin-bottom: 8px; }
+        .progress-bar-bg { background: #e2e4e9; border-radius: 99px; height: 8px; overflow: hidden; }
+        .progress-bar-fill {
+            height: 100%; background: #4f6ef7; border-radius: 99px; width: 0%; transition: width 0.3s;
+        }
+
+        .success-msg {
+            display: none; margin-top: 16px;
+            background: #edfaf3; border: 1px solid #a3e6c3; color: #1a6e42;
+            border-radius: 10px; padding: 14px 18px; font-size: 14px; font-weight: 500;
+        }
+        .error-msg {
+            display: none; margin-top: 16px;
+            background: #fff5f5; border: 1px solid #feb2b2; color: #c53030;
+            border-radius: 10px; padding: 14px 18px; font-size: 14px; font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .action-bar { flex-direction: column; align-items: flex-start; }
+            .preview-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+            .tab-btn { padding: 12px 12px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-icon">⚡</div>
+    <h1>Convert <span>Tools</span></h1>
+</header>
+
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('pdf')">🖼️ PNG to PDF</button>
+    <button class="tab-btn" onclick="switchTab('mp3')">🎵 MP4 to MP3</button>
+</div>
+
+<div class="container">
+
+    <div class="tool-section active" id="section-pdf">
+        <div class="section-title">PNG to PDF</div>
+        <div class="section-desc">Upload gambar PNG, JPG, atau WEBP — jadikan satu file PDF.</div>
+
+        <div class="upload-area" id="pdf-upload-area">
+            <input type="file" id="pdf-images" multiple accept="image/png,image/jpeg,image/jpg,image/webp">
+            <div class="upload-icon">🖼️</div>
+            <h2>Seret & lepas gambar di sini</h2>
+            <p>Mendukung PNG, JPG, WEBP — bisa pilih banyak sekaligus</p>
+            <div class="browse-btn">Pilih File</div>
+        </div>
+
+        <div class="preview-section" id="pdf-preview-section">
+            <div class="preview-header">
+                <h3>Preview Gambar</h3>
+                <span id="pdf-count-label">0 gambar dipilih</span>
+            </div>
+            <div class="preview-grid" id="pdf-preview-grid"></div>
+        </div>
+
+        <div class="action-bar" id="pdf-action-bar">
+            <div class="action-info">
+                Siap mengonversi <strong id="pdf-file-count">0</strong> gambar menjadi 1 PDF
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="pdfClearAll()">Hapus Semua</button>
+                <button class="btn-convert" id="pdf-convert-btn" onclick="convertToPDF()">⬇ Konversi ke PDF</button>
+            </div>
+        </div>
+
+        <div class="progress-wrap" id="pdf-progress-wrap">
+            <div class="progress-label" id="pdf-progress-label">Memproses...</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="pdf-progress-bar"></div></div>
+        </div>
+        <div class="success-msg" id="pdf-success-msg">✅ PDF berhasil dibuat dan diunduh!</div>
+    </div>
+
+    <div class="tool-section" id="section-mp3">
+        <div class="section-title">MP4 to MP3</div>
+        <div class="section-desc">Extract audio dari file video MP4 menjadi WAV langsung di browser — tanpa upload ke server.</div>
+
+        <div class="upload-area" id="mp3-upload-area">
+            <input type="file" id="mp4-file" accept="video/mp4,video/*">
+            <div class="upload-icon">🎬</div>
+            <h2>Seret & lepas video di sini</h2>
+            <p>Mendukung MP4, MKV, AVI, MOV — output WAV</p>
+            <div class="browse-btn">Pilih File Video</div>
+        </div>
+
+        <div class="video-preview-box" id="video-preview-box">
+            <div class="video-info">
+                <div class="video-thumb">🎬</div>
+                <div class="video-meta">
+                    <div class="video-name" id="video-name">-</div>
+                    <div class="video-size" id="video-size">-</div>
+                </div>
+                <button class="video-remove" onclick="mp3ClearFile()">✕ Hapus</button>
+            </div>
+
+        </div>
+
+        <div class="action-bar" id="mp3-action-bar">
+            <div class="action-info">
+                Siap mengekstrak audio dari <strong id="mp3-file-name">-</strong>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="mp3ClearFile()">Hapus</button>
+                <button class="btn-convert" id="mp3-convert-btn" onclick="convertToMP3()">⬇ Ekstrak Audio</button>
+            </div>
+        </div>
+
+        <div class="progress-wrap" id="mp3-progress-wrap">
+            <div class="progress-label" id="mp3-progress-label">Memuat FFmpeg...</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="mp3-progress-bar"></div></div>
+        </div>
+
+        <div class="success-msg" id="mp3-success-msg">✅ Audio (WAV) berhasil diekstrak dan diunduh!</div>
+        <div class="error-msg" id="mp3-error-msg"></div>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+
+function switchTab(tab) {
+    document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + tab).classList.add('active');
+    event.target.classList.add('active');
+}
+
+let pdfFileList = [];
+const pdfUploadArea = document.getElementById('pdf-upload-area');
+const pdfInput = document.getElementById('pdf-images');
+
+pdfUploadArea.addEventListener('dragover', e => { e.preventDefault(); pdfUploadArea.classList.add('drag-over'); });
+pdfUploadArea.addEventListener('dragleave', () => pdfUploadArea.classList.remove('drag-over'));
+pdfUploadArea.addEventListener('drop', e => {
+    e.preventDefault(); pdfUploadArea.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    pdfAddFiles(files);
+});
+pdfInput.addEventListener('change', () => { pdfAddFiles(Array.from(pdfInput.files)); pdfInput.value = ''; });
+
+function pdfAddFiles(files) { files.forEach(f => pdfFileList.push(f)); pdfRenderPreviews(); }
+
+function pdfRemoveFile(i) { pdfFileList.splice(i, 1); pdfRenderPreviews(); }
+
+function pdfClearAll() { pdfFileList = []; pdfRenderPreviews(); }
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function pdfRenderPreviews() {
+    const grid = document.getElementById('pdf-preview-grid');
+    const section = document.getElementById('pdf-preview-section');
+    const bar = document.getElementById('pdf-action-bar');
+    grid.innerHTML = '';
+    if (pdfFileList.length === 0) {
+        section.style.display = 'none'; bar.classList.remove('visible');
+        document.getElementById('pdf-success-msg').style.display = 'none'; return;
+    }
+    section.style.display = 'block'; bar.classList.add('visible');
+    document.getElementById('pdf-count-label').textContent = pdfFileList.length + ' gambar dipilih';
+    document.getElementById('pdf-file-count').textContent = pdfFileList.length;
+    pdfFileList.forEach((file, i) => {
+        const url = URL.createObjectURL(file);
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+        card.innerHTML = `
+            <span class="page-badge">Hal ${i+1}</span>
+            <img src="${url}" alt="${file.name}" onload="URL.revokeObjectURL(this.src)">
+            <button class="remove-btn" onclick="pdfRemoveFile(${i})" title="Hapus">✕</button>
+            <div class="card-info">
+                <div class="card-name">${file.name}</div>
+                <div class="card-size">${formatSize(file.size)}</div>
+            </div>`;
+        grid.appendChild(card);
+    });
+}
+
+async function convertToPDF() {
+    if (pdfFileList.length === 0) return;
+    const namaFile = prompt('Beri nama untuk file PDF kamu:', 'dokumen');
+    if (namaFile === null) return;
+    const fileName = (namaFile.trim() || 'dokumen').replace(/\.pdf$/i, '') + '.pdf';
+
+    const btn = document.getElementById('pdf-convert-btn');
+    const progressWrap = document.getElementById('pdf-progress-wrap');
+    const progressBar = document.getElementById('pdf-progress-bar');
+    const progressLabel = document.getElementById('pdf-progress-label');
+    const successMsg = document.getElementById('pdf-success-msg');
+
+    btn.disabled = true; progressWrap.style.display = 'block'; successMsg.style.display = 'none';
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    for (let i = 0; i < pdfFileList.length; i++) {
+        const file = pdfFileList[i];
+        progressLabel.textContent = `Memproses gambar ${i+1} dari ${pdfFileList.length}...`;
+        progressBar.style.width = ((i / pdfFileList.length) * 100) + '%';
+        await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    if (i > 0) pdf.addPage();
+                    const pdfW = pdf.internal.pageSize.getWidth(), pdfH = pdf.internal.pageSize.getHeight();
+                    const margin = 10, maxW = pdfW - margin*2, maxH = pdfH - margin*2;
+                    let w = img.width, h = img.height;
+                    const ratio = Math.min(maxW/w, maxH/h);
+                    w = w*ratio; h = h*ratio;
+                    pdf.addImage(img, file.type === 'image/png' ? 'PNG' : 'JPEG', (pdfW-w)/2, (pdfH-h)/2, w, h);
+                    resolve();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    progressBar.style.width = '100%';
+    progressLabel.textContent = 'Menyimpan PDF...';
+    setTimeout(() => {
+        pdf.save(fileName);
+        btn.disabled = false; progressWrap.style.display = 'none'; successMsg.style.display = 'block';
+    }, 400);
+}
+
+let mp4File = null;
+
+const mp3UploadArea = document.getElementById('mp3-upload-area');
+const mp4Input = document.getElementById('mp4-file');
+
+mp3UploadArea.addEventListener('dragover', e => { e.preventDefault(); mp3UploadArea.classList.add('drag-over'); });
+mp3UploadArea.addEventListener('dragleave', () => mp3UploadArea.classList.remove('drag-over'));
+mp3UploadArea.addEventListener('drop', e => {
+    e.preventDefault(); mp3UploadArea.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+    if (files.length > 0) setMP4File(files[0]);
+});
+mp4Input.addEventListener('change', () => { if (mp4Input.files[0]) setMP4File(mp4Input.files[0]); mp4Input.value = ''; });
+
+function setMP4File(file) {
+    mp4File = file;
+    document.getElementById('video-name').textContent = file.name;
+    document.getElementById('video-size').textContent = formatSize(file.size);
+    document.getElementById('video-preview-box').style.display = 'block';
+    document.getElementById('mp3-action-bar').classList.add('visible');
+    document.getElementById('mp3-file-name').textContent = file.name;
+    document.getElementById('mp3-success-msg').style.display = 'none';
+    document.getElementById('mp3-error-msg').style.display = 'none';
+}
+
+function mp3ClearFile() {
+    mp4File = null;
+    document.getElementById('video-preview-box').style.display = 'none';
+    document.getElementById('mp3-action-bar').classList.remove('visible');
+    document.getElementById('mp3-progress-wrap').style.display = 'none';
+    document.getElementById('mp3-success-msg').style.display = 'none';
+    document.getElementById('mp3-error-msg').style.display = 'none';
+}
+
+async function convertToMP3() {
+    if (!mp4File) return;
+
+    const randomNum = Math.floor(10000 + Math.random() * 90000);
+    const outputName = `tools.dap.${randomNum}.wav`;
+
+    const btn = document.getElementById('mp3-convert-btn');
+    const progressWrap = document.getElementById('mp3-progress-wrap');
+    const progressBar = document.getElementById('mp3-progress-bar');
+    const progressLabel = document.getElementById('mp3-progress-label');
+    const successMsg = document.getElementById('mp3-success-msg');
+    const errorMsg = document.getElementById('mp3-error-msg');
+
+    btn.disabled = true;
+    progressWrap.style.display = 'block';
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    progressBar.style.width = '10%';
+    progressLabel.textContent = 'Membaca file video...';
+
+    try {
+        const arrayBuffer = await mp4File.arrayBuffer();
+        progressBar.style.width = '30%';
+        progressLabel.textContent = 'Mendekode audio...';
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        progressBar.style.width = '70%';
+        progressLabel.textContent = 'Mengonversi ke WAV...';
+
+        const wavBuffer = audioBufferToWav(audioBuffer);
+        progressBar.style.width = '90%';
+        progressLabel.textContent = 'Menyimpan file...';
+
+        const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = outputName; a.click();
+        URL.revokeObjectURL(url);
+        audioCtx.close();
+
+        progressBar.style.width = '100%';
+        setTimeout(() => {
+            btn.disabled = false;
+            progressWrap.style.display = 'none';
+            successMsg.style.display = 'block';
+        }, 400);
+
+    } catch (err) {
+        btn.disabled = false;
+        progressWrap.style.display = 'none';
+        errorMsg.textContent = '❌ Gagal mengonversi: ' + (err.message || 'Format video tidak didukung browser ini.');
+        errorMsg.style.display = 'block';
+        console.error(err);
+    }
+}
+
+function audioBufferToWav(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const numSamples = buffer.length;
+    const bytesPerSample = 2;
+    const blockAlign = numChannels * bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    const dataSize = numSamples * blockAlign;
+    const wavBuffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(wavBuffer);
+
+    function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bytesPerSample * 8, true);
+    writeStr(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    let offset = 44;
+    for (let i = 0; i < numSamples; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+            const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            offset += 2;
+        }
+    }
+    return wavBuffer;
+}
+</script>
+
+</body>
+</html>
