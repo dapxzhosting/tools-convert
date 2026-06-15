@@ -11,12 +11,12 @@ Aplikasi web sederhana berbasis HTML, CSS, dan JavaScript untuk dua kebutuhan ko
 - Gabungkan semua gambar menjadi satu file PDF, dengan setiap gambar otomatis diatur agar pas di tengah halaman.
 - Nama file PDF bisa diatur sendiri sebelum diunduh.
 
-### 2. MP4 to MP3 (WAV)
+### 2. MP4 to MP3
 - Upload satu file video (MP4 dan format video lain yang didukung browser) lewat drag & drop atau klik tombol.
 - Preview informasi file: nama dan ukuran.
-- Ekstraksi audio dilakukan langsung di browser menggunakan Web Audio API — tidak ada file yang dikirim ke server.
-- Hasil ekstraksi diunduh otomatis dalam format `.wav` dengan nama acak (`tools.dap.XXXXX.wav`).
-- Progress bar menampilkan tahapan proses (membaca file → decode audio → konversi ke WAV → simpan).
+- Ekstraksi dan encoding audio dilakukan langsung di browser menggunakan Web Audio API + lamejs — tidak ada file yang dikirim ke server.
+- Hasil ekstraksi diunduh otomatis dalam format `.mp3` (128 kbps) dengan nama acak (`tools.dap.XXXXX.mp3`).
+- Progress bar menampilkan tahapan proses (membaca file → decode audio → encode ke MP3 → simpan).
 
 ## Cara Pakai
 
@@ -31,7 +31,8 @@ Aplikasi web sederhana berbasis HTML, CSS, dan JavaScript untuk dua kebutuhan ko
 - **HTML/CSS** — struktur dan tampilan, didesain minimalis dengan tema warna biru (`#4f6ef7`).
 - **JavaScript (vanilla)** — logika upload, preview, dan konversi.
 - **[jsPDF](https://github.com/parallax/jsPDF)** (via CDN) — untuk membuat file PDF dari gambar.
-- **Web Audio API** — untuk decode dan konversi audio video ke WAV secara native di browser.
+- **[lamejs](https://github.com/zhuker/lamejs)** (via CDN) — untuk encode audio ke format MP3.
+- **Web Audio API** — untuk decode audio video secara native di browser sebelum di-encode ke MP3.
 
 ## Catatan
 
